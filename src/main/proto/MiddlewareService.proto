@@ -1,0 +1,248 @@
+syntax = "proto3";
+option java_multiple_files = true;
+package com.boat.grpc.server.grpcserver; 
+message AddCallBackRequest{
+   string url = 1;  //Url for callback 
+ }
+message BalanceResponse{
+  string accountNo = 1; //Account number 
+  string  savingsProductName = 2; //Product 
+  double accountBalance = 3; //customer balance
+  double  availableBalance = 4; //customer available balance 
+}
+message BalanceRequest{
+  string accountId = 1; //Account id returned after onboarding 
+}
+message Empty{
+}
+message ReversalRequest{
+   string clientId = 1;  // Senders client id
+   string transactionId = 2; // Mifos transaction id returned by callback
+}
+message TransactionResponse{
+   string status = 1; // Http status from Mifos 
+   string message = 2; // message returned from Mifos
+   string  mifosReference = 3 ;// reference Id from Mifos  
+   string reProcessRef = 4; //this returned for failed transactions it shoudl be used to replace teh preposes ref
+}
+message SetUpResponse{
+   string status = 1; // Http status from Mifos 
+   string message = 2; // message returned from Mifos
+   string clientId = 3; // Client Id of bank or biller added to system 
+   string accountId = 4; // Account id of bank or biller added to system
+   string chargeClientId = 5; // Client id of bank or biller's charge account where charges will go (boats commsion )
+   string chargeAccountId = 6; // Client id of bank or biller's charge account where charges will go (boats commsion )
+}
+message SavingsProduct {
+   string id = 1;
+   string name = 2;
+   string shortName = 3;
+   string description = 4;
+   string currency = 5;
+}
+message Reference {
+    string id = 1;
+    string name =2;
+    string description = 3;
+    string position = 4;
+}
+message OnboardingRequest {
+    string firstName = 1; // Customer first name 
+    string middleName =2; // Customer middlename
+    string lastName = 3; // Customer lastname
+    string email = 4; // Customer email 
+    string phone = 5; // Customer phone number 
+    string dateOfBirth =6; // Customer date of birth 
+    string gender = 7; // Customer gender
+    string photo = 8; // Customer photo (not required)
+    bool activated = 9; // This defaults to  true since its an activation request 
+    string userStatus = 10; // the users state
+    string role = 11;   // Consumer of Agent 
+    string savingsAccountId = 12; // Customers savings wallet id returned after succesful onboarding 
+    string clientId =13; // Customers client id returned after succesful onboarding 
+    string commissionAccountId = 14; // Customers commission id returned after succesful onboarding (only for agents)
+    string walletAccountId = 15;// Customers main wallet id returned after succesful onboarding 
+    string loanAccountId = 16;	// not returned
+}
+message OnboardingResponse {
+   string status = 1; // Http status from Mifos 
+   string message = 2; // message returned from Mifos
+   OnboardingRequest customer = 3; //Initail onboarding request 
+
+}
+message SavingsProductResponse {
+   repeated SavingsProduct products = 1;
+}
+message ReferenceResponse {
+   repeated Reference reference = 1;
+}
+message WalletTransferRequest {
+   string fromClientId = 1; // Client id of the sender 
+   string fromAccountId = 2; // Account id  of the sender 
+   string toClientId = 3; // Client id of the receiver 
+   string toAccountId = 4; // Account id of the receiver  
+   string transferAmount = 5; // amount to transfer 
+   string transferDescription = 6; // Pass boat transactionid
+   string commissionAmount = 7;  // Amount to be paid in commsion to the sender 
+   string chargeAmount = 8; // Amount in charges to be paid to boat , this is paid to boat charge account for wallet to wallet (this field is optional )
+   bool chargeSender = 9; // true to charge sender and false to charge receiver 
+   string senderPhone = 10; // phone number of sender 
+   string receiverPhone = 11; // phone number of receiver
+   
+}
+message PayBillRequest {
+   string fromClientId = 1; // Client id of the sender 
+   string fromAccountId = 2; // Account id  of the sender   
+   string toBillerClientId = 3; // Client id of the receiver (biller)
+   string toBillerAccountId = 4;  // Account id of the receiver  (biller)
+   string transferAmount = 5; // amount to transfer 
+   string transferDescription = 6; // Pass boat transactionid
+   string chargeClientId = 7; // Client id of biller charge account returned when biller is added to system
+   string chargeAccountId = 8; // Account id of biller charge account returned when biller is added to system
+   string commissionAmount = 9; // Amount to be paid in commsion to the sender 
+   string chargeAmount = 10; // Amount in charges to be paid to boat , this is paid to the biller charge account (this field is optional )
+   bool chargeSender = 11; // true to charge sender and false to charge receiver  (biller)
+   string senderPhone = 12; // phone number of sender 
+   string receiverPhone = 13; // Biller Code for receiver (biller)
+   string preTransactionref = 14; //returned from preprocessing transaction
+}
+message WalletToBankRequest {
+   string fromClientId = 1; // Client id of the sender 
+   string fromAccountId = 2; // Account id  of the sender  
+   string toBankClientId = 3;  // Client id of the receiver (Bank)
+   string toBankAccountId = 4; // Account id of the receiver  (Bank)
+   string transferAmount = 5; // amount to transfer 
+   string transferDescription = 6; // Pass boat transactionid
+   string commissionAmount = 7;  // Amount to be paid in commsion to the sender 
+   string chargeAmount = 8; // Amount in charges to be paid to boat , this is paid to the bank charge account (this field is optional )
+   string senderPhone = 9; // phone number of sender 
+   string receiverPhone = 10; // Bank Code for receiver (bank)
+   string chargeClientId = 11; // Client id of bank charge account returned when bank  is added to system
+   string chargeAccountId = 12; // Account id of bank charge account returned when bank is added to system
+   string preTransactionref = 13;  //returned from preprocessing transaction
+   string thirdPartyCommissionAmount =14; //commsion for third party supplier platform like partner bank
+}
+message BankToWalletRequest {
+   string fromBankClientId = 1; // Client id of the sender bank or switch 
+   string fromBankAccountId = 2; // Account id  of the sender bank or switch 
+   string toClientId = 3; // Client id of the receiver 
+   string toAccountId = 4;  // Account id of the receiver  
+   string transferAmount = 5; // amount to transfer 
+   string transferDescription = 6; // Pass boat transactionid
+   string senderPhone = 7; // bankc code of sender bank or switch 
+   string receiverPhone = 8; // phone number of receiver  
+   string thirdPartyCommissionAmount =9; //commsion for third party supplier platform like partner bank
+  
+}
+message AddBankRequest {
+    string bankName = 1;
+    string bankCode = 2;
+}
+message AddBillerRequest {
+   string billerName = 1;
+   string billerCode = 2;
+}
+message PreProcessRequest {
+   string transferAmount = 1;
+   string fromAccountId = 2;
+}
+message PreProcessResponse{
+   string status = 1; // Http status from Mifos 
+   string message = 2; // message returned from Mifos
+   string preTransactionref = 3;  //reference to be returned during real transaction 
+}
+
+message LoanResponse{
+   string status = 1; // Http status from Mifos 
+   string message = 2; // message returned from Mifos
+   string MifosLoanId = 3;  //reference to be returned after loan application is sent
+}
+
+message LoanOnboardingResponse{
+   string status = 1; // Http status from Mifos 
+   string message = 2; // message returned from Mifos
+   string loanAccountId = 3;  //returned loan id
+}
+
+message LoanOnboardingRequest{
+   string clientId = 1; // Client id of customer
+
+}
+
+message LoanRequest{
+   string clientId = 1; // clinet id of the user requesting for loan 
+   string productId = 2; // id representing the loan selected by user 
+   string loanAmount = 3;  //monitery value of loan being requested 
+   string loanType = 4; //individual,group jlg (joint liability)
+   string expectedDisbursementDate = 5; //Date customer expects to get loan   
+   string linkAccountId = 6 ;// customer account loan is payed to when payToEscrow is false
+   int32 loanTermFrequency =7; //should be supplied by accountatnt when creating loan product
+   int32 loanTermFrequencyType = 8; //should be supplied by accountatnt when creating loan product
+   bool payToEscrow = 9; //if the loan should be paid to escrow account or not 
+}
+
+message LoanBalanceResponse{
+   string accountNo = 1; //Account number 
+   string loanProductName = 2; //Product 
+   string code = 3;
+   string value = 4;
+   string active = 5; 
+   string closedObligationsMet = 6;
+   string closedWrittenOff = 7;
+   string closedRescheduled = 8;
+   string closed = 9;
+   string overpaid = 10;
+   double loanTermInDays = 11;
+   double totalPrincipalDisbursed = 12;
+   double totalPrincipalExpected = 13;
+   double totalPrincipalPaid = 14;
+   double totalInterestCharged = 15;
+   double totalFeeChargesCharged = 16;
+   double totalPenaltyChargesCharged = 17;
+   double totalWaived = 18;
+   double totalWrittenOff = 19;
+   double totalRepayment = 20;
+   double totalOutstanding = 21;
+
+ }
+
+ message RepayLoanResponse{
+   string status = 1; // Http status from Mifos 
+   string message = 2; // message returned from Mifos
+   string MifosLoanRepaymentId = 3;  //reference to be returned after loan application is sent
+}
+
+message RepayLoanRequest{
+   double transactionAmount = 1; // Amount customer is paying 
+   string loanId = 2; // id representing the loan taken by user
+}
+
+service OnboardingService {
+    rpc addCustomer(OnboardingRequest) returns (OnboardingResponse);
+    rpc addLoanWallet(LoanOnboardingRequest) returns (LoanOnboardingResponse);
+}
+service ReferenceService {
+    rpc getSavingsProduct(Empty) returns (SavingsProductResponse);
+    rpc getStates(Empty) returns (ReferenceResponse);
+    rpc getCountries(Empty) returns (ReferenceResponse);
+}
+service TransactionService {
+    rpc doWalletTransfer(WalletTransferRequest) returns (TransactionResponse);
+    rpc doPayBill(PayBillRequest) returns (TransactionResponse);
+    rpc doWalletToBank(WalletToBankRequest) returns (TransactionResponse);
+    rpc doBankToWallet(BankToWalletRequest) returns (TransactionResponse);
+    rpc getBalance(BalanceRequest) returns (BalanceResponse);
+    rpc doReversal(ReversalRequest) returns (TransactionResponse);
+    rpc doPreProcess(PreProcessRequest) returns (PreProcessResponse);
+}
+service SetUpService {
+    rpc addBank(AddBankRequest) returns (SetUpResponse);
+    rpc addBiller(AddBillerRequest) returns (SetUpResponse);
+    rpc addCallBack(AddCallBackRequest) returns (Empty);
+
+}
+service LoanService {
+   rpc processLoan(LoanRequest) returns (LoanResponse);
+   rpc getLoanBalance(BalanceRequest) returns (LoanBalanceResponse);
+   rpc repayLoan(RepayLoanRequest) returns (RepayLoanResponse);
+}
